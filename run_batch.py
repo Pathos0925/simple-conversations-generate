@@ -107,8 +107,13 @@ def process_batch_file(input_file, params_lookup):
                 skipped["not_succeeded"] += 1
                 continue
 
-            completion = result_data["message"]["content"][0]["text"]
-            gen_model = result_data["message"]["model"]
+            message = result_data["message"]
+            if not message.get("content") or message.get("stop_reason") == "refusal":
+                skipped["not_succeeded"] += 1
+                continue
+
+            completion = message["content"][0]["text"]
+            gen_model = message["model"]
 
             processed = process_conversation(completion, params, gen_model)
             if not processed["valid"]:
@@ -204,18 +209,31 @@ def postprocess(directory):
     return output_file
 
 
-def filter_dataset(output_file):
+def load_tokenizer(tokenizer_path):
+    import sys
+    tokenizer_dir = os.path.dirname(os.path.abspath(tokenizer_path))
+    if tokenizer_dir not in sys.path:
+        sys.path.insert(0, tokenizer_dir)
+    from sentencepiece import SentencePieceProcessor
+    sp = SentencePieceProcessor(model_file=tokenizer_path)
+    return sp
+
+
+def filter_dataset(output_file, tokenizer_path=None):
     df = pd.read_json(output_file, lines=True)
     print(f"Total conversations before filtering: {len(df)}")
 
     df["conversation"] = df["conversation"].apply(lambda x: unidecode(x))
 
-    df = df[df["character_count"] >= 1024]
-    df = df[df["character_count"] <= 2048]
-    print(f"After character count filter (1024-2048): {len(df)}")
-
-    df = df[df["total_turns"] >= 3]
-    print(f"After minimum turns filter (>=3): {len(df)}")
+    if tokenizer_path:
+        print(f"Counting tokens with tokenizer: {tokenizer_path}")
+        sp = load_tokenizer(tokenizer_path)
+        df["token_count"] = df["conversation"].apply(lambda x: len(sp.encode(x)))
+        df = df[df["token_count"] >= 512]
+        print(f"After token count filter (>=512): {len(df)}")
+    else:
+        df = df[df["character_count"] >= 1024]
+        print(f"After character count filter (>=1024): {len(df)}")
 
     df["initial_word_type"] = df["initial_word_type"].apply(
         lambda x: x.split()[-1] if x else x
@@ -228,8 +246,8 @@ def filter_dataset(output_file):
         "conversation", "topic", "topic_category", "tone", "mode",
         "story_ending", "grammar", "initial_word_type", "initial_letter",
         "story_theme", "story_style", "story_feature", "story_persona",
-        "word_count", "character_count", "person1_turns", "person2_turns",
-        "total_turns", "model",
+        "word_count", "character_count", "token_count",
+        "person1_turns", "person2_turns", "total_turns", "model",
     ]
     df = df[[c for c in ordered_cols if c in df.columns]]
 
@@ -240,6 +258,11 @@ def filter_dataset(output_file):
     print(f"\nMode distribution:\n{df['mode'].value_counts(normalize=True)}")
     print(f"\nTopic category distribution:\n{df['topic_category'].value_counts()}")
     print(f"\nCharacter count stats:\n{df['character_count'].describe()}")
+
+    if "token_count" in df.columns:
+        print(f"\nToken count stats:\n{df['token_count'].describe()}")
+        total_tokens = df["token_count"].sum()
+        print(f"\nTotal tokens in dataset: {total_tokens:,}")
 
     return filtered_file
 
@@ -265,9 +288,11 @@ def main():
     run_p.add_argument("--offset", type=int, default=0, help="Param iterator offset")
     run_p.add_argument("--model", default="claude-sonnet-4-6")
     run_p.add_argument("--max-retries", type=int, default=3)
+    run_p.add_argument("--tokenizer", default=None, help="Path to sentencepiece .model file for token counting")
 
     proc_p = sub.add_parser("process", help="Post-process a completed batch directory")
     proc_p.add_argument("directory", help="Path to batch directory (e.g. data/conv_batches_...)")
+    proc_p.add_argument("--tokenizer", default=None, help="Path to sentencepiece .model file for token counting")
 
     dl_p = sub.add_parser("download", help="Download results from a previous batch ID")
     dl_p.add_argument("batch_id", help="Batch ID (msgbatch_...)")
@@ -310,13 +335,13 @@ def main():
         print_cost_summary(directory)
         output_file = postprocess(directory)
         if output_file:
-            filter_dataset(output_file)
+            filter_dataset(output_file, tokenizer_path=args.tokenizer)
 
     elif args.command == "process":
         print_cost_summary(args.directory)
         output_file = postprocess(args.directory)
         if output_file:
-            filter_dataset(output_file)
+            filter_dataset(output_file, tokenizer_path=args.tokenizer)
 
     elif args.command == "download":
         client = anthropic.Anthropic()

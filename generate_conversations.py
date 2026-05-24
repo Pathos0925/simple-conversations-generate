@@ -12,7 +12,8 @@ from datetime import datetime
 
 from conversation_data import (
     topics, tones, grammars, word_types, letter_frequencies, subjects,
-    CONVERSATION_MODES, ALLOWED_NAMES, MIN_CHARS, MAX_CHARS, MAX_TOKENS,
+    CONVERSATION_MODES, ALLOWED_NAMES, NAMES_PER_CONVERSATION,
+    MIN_CHARS, MAX_CHARS, MAX_TOKENS,
     topic_categories,
     story_themes, story_styles, story_features, story_personas,
     story_endings,
@@ -26,8 +27,6 @@ SYSTEM_PROMPT = (
     "Not every conversation needs a happy ending. Sometimes things are sad, "
     "unresolved, or just ordinary. Reflect real life."
 )
-
-NAMES_STR = ", ".join(ALLOWED_NAMES)
 
 
 def get_random_params():
@@ -49,6 +48,7 @@ def get_random_params():
         "tone": random.choice(tones),
         "mode": mode,
         "starter": random.choice([1, 2]),
+        "names": random.sample(ALLOWED_NAMES, NAMES_PER_CONVERSATION),
         "initial_letter": random_letter,
         "initial_word_type": random.choice(word_types),
         "grammar": grammar,
@@ -109,6 +109,7 @@ def iterate_params(seed=42):
             "tone": tone,
             "mode": mode,
             "starter": 1 + (k % 2),
+            "names": random.sample(ALLOWED_NAMES, NAMES_PER_CONVERSATION),
             "initial_letter": random_letter,
             "initial_word_type": word_types[k % len(word_types)],
             "grammar": grammar,
@@ -134,6 +135,8 @@ def iterate_params(seed=42):
 
 
 def create_conversation_prompt(params):
+    names_str = ", ".join(params.get("names", ALLOWED_NAMES[:NAMES_PER_CONVERSATION]))
+
     grammar_instruction = ""
     if params["grammar"]:
         grammar_instruction = (
@@ -182,7 +185,7 @@ def create_conversation_prompt(params):
             f"- Use very basic, simple words only\n"
             f"- Keep all explanations to one or two short sentences\n"
             f"- No big or unusual words\n"
-            f"- If using names in the story, pick from: {NAMES_STR}\n"
+            f"- If using names in the story, pick from: {names_str}\n"
             f"- Start the conversation with {params['initial_word_type']} that begins with "
             f"the letter {params['initial_letter']}"
             f"{grammar_instruction}"
@@ -205,7 +208,7 @@ def create_conversation_prompt(params):
             f"- Use very basic, simple words only\n"
             f"- Keep all explanations to one or two short sentences\n"
             f"- No big or unusual words\n"
-            f"- If using names, pick from: {NAMES_STR}\n"
+            f"- If using names, pick from: {names_str}\n"
             f"- Start the conversation with {params['initial_word_type']} that begins with "
             f"the letter {params['initial_letter']}"
             f"{grammar_instruction}"

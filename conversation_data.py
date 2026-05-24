@@ -12,8 +12,8 @@ letter_frequencies = {
 }
 
 CONVERSATION_MODES = [
-    ("storytelling", 0.75),
-    ("dialogue", 0.25),
+    ("storytelling", 0.25),
+    ("dialogue", 0.75),
 ]
 
 topics = [
@@ -97,6 +97,8 @@ topics = [
     "not getting what you wanted",
     "a disagreement between two people",
     "being tired but having to keep going",
+    "being angry",
+    "arguments",
     # Nature and Seasons
     "a very hot day",
     "a cold winter night",
@@ -187,6 +189,8 @@ topic_categories = {
     "not getting what you wanted": "grounded",
     "a disagreement between two people": "grounded",
     "being tired but having to keep going": "grounded",
+    "being angry": "grounded",
+    "arguments": "grounded",
     "a very hot day": "nature",
     "a cold winter night": "nature",
     "watching a sunset": "nature",
@@ -197,6 +201,7 @@ topic_categories = {
     "how to take care of a pet": "practical",
     "what to do when you are sick": "practical",
     "how to find your way if you are lost": "practical",
+    "meeting for the first time": "introductions",
     "two people meeting for the first time": "introductions",
     "introducing yourself to a new neighbor": "introductions",
     "meeting someone at work": "introductions",
@@ -211,7 +216,7 @@ tones = [
     # Neutral (~20%)
     "matter-of-fact", "quiet", "cautious", "tired",
     # Negative (~10%)
-    "frustrated", "tense", "bittersweet",
+    "frustrated", "tense", "bittersweet", "argumentative", "angry",
 ]
 
 grammars = [
@@ -262,7 +267,11 @@ word_types = ["a noun", "an adjective", "an adverb", "a preposition"]
 ALLOWED_NAMES = [
     "Mia", "Alex", "Jean", "Samuel", "Lily", "Leo", "Jose", "Kim",
     "Alice", "Lena", "Rita", "Emmanuel", "Anne", "Peter", "Maria", "Luis",
+    "Tom", "Sara", "Jack", "Nina", "Paul", "Rosa", "Ben", "Ella",
+    "Max", "Jade", "Omar", "Clara", "Ivan", "Nora", "Adam", "Ruth",
 ]
+
+NAMES_PER_CONVERSATION = 4
 
 MIN_CHARS = 1024
 MAX_CHARS = 2048
@@ -270,8 +279,8 @@ MAX_TOKENS = 4096
 
 # Weighted endings: ~70% happy, ~20% neutral, ~10% negative
 story_endings = [
-    ("happy", 0.70),
-    ("neutral", 0.20),
+    ("happy", 0.60),
+    ("neutral", 0.30),
     ("sad", 0.10),
 ]
 
