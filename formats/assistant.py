@@ -226,6 +226,88 @@ TOPICS = [
     "looking up how many legs a spider has",
     "searching for what a word means",
     "looking up the name of a planet",
+
+    # Weather — extended
+    "checking if it is safe to go outside in a storm",
+    "checking the weather in a different city",
+    "asking what the weather will be like tomorrow",
+    "checking if it is too cold to go swimming",
+
+    # Memory — extended
+    "asking to remember a list of three things",
+    "storing a friend's address and recalling it later",
+    "asking to remember a joke someone told",
+    "storing a password and getting it back later",
+    "remembering what day the meeting is on",
+    "recalling the name of a song you heard",
+
+    # Math — extended
+    "asking how much paint is needed for a wall",
+    "asking how much fabric to buy for a project",
+    "asking how many cups of flour for a recipe",
+    "dividing a pizza fairly between people",
+    "calculating how far it is to walk somewhere",
+    "figuring out how long until dinner is ready",
+
+    # Smart home — extended
+    "asking to set the lights to dim",
+    "setting a morning alarm",
+    "asking to lock all the doors before bed",
+    "adjusting the temperature because it is too hot",
+    "playing a bedtime song for a child",
+    "turning off everything before leaving the house",
+    "setting a timer to check on the oven",
+
+    # Game — exploration extended
+    "finding a bridge over a deep valley",
+    "entering a castle for the first time",
+    "walking through a field of tall grass",
+    "discovering a waterfall behind some rocks",
+    "finding stairs going down into the ground",
+    "reaching the top of a mountain",
+    "exploring a shipwreck on the beach",
+    "entering a dark tunnel",
+    "finding a campsite someone left behind",
+    "discovering a door hidden behind vines",
+
+    # Game — items extended
+    "finding a bottle with a note inside",
+    "using a shield to block something",
+    "combining two items to make something new",
+    "finding armor in an old chest",
+    "using a bucket to carry water",
+    "finding a fishing rod near a stream",
+    "picking up coins scattered on the floor",
+
+    # Game — social extended
+    "asking a shopkeeper about a rare item",
+    "helping a villager fix their broken cart",
+    "listening to a traveler tell a strange story",
+    "convincing a bridge keeper to let you pass",
+    "meeting a person who is lost and scared",
+    "trading food with a hungry stranger",
+    "asking a child where the hidden path is",
+
+    # Organization — extended
+    "planning a meal for the week",
+    "making a packing list for a camping trip",
+    "organizing a list of chores by room",
+    "setting reminders for watering different plants",
+    "keeping track of books you want to read",
+
+    # Communication — extended
+    "writing a message to say happy birthday",
+    "sending a message to cancel plans",
+    "looking up a phone number and calling someone",
+    "searching for directions and sending them to a friend",
+    "writing a thank-you note to a teacher",
+
+    # Multi-step scenarios
+    "checking the weather, then setting a reminder to bring a coat",
+    "looking up a recipe, then making a shopping list",
+    "checking the time, then sending a message that you will be late",
+    "looking up a fact for homework, then remembering it for later",
+    "searching for a word, then using it in a sentence",
 ]
 
 TOPIC_CATEGORIES = {}

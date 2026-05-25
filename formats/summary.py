@@ -126,6 +126,71 @@ TOPICS = [
     "an old book that told a secret",
     "a mirror that showed a different place",
     "a seed that grew into something nobody expected",
+
+    # Cleverness and wit
+    "a small animal that tricked a much bigger one",
+    "a child who solved a problem the adults could not",
+    "a merchant who made a very clever trade",
+    "a thief who stole something and then gave it back",
+    "a farmer who outsmarted the weather",
+    "a girl who found a way to carry water uphill",
+
+    # Mistakes and learning
+    "a boy who told a lie that got bigger and bigger",
+    "a person who took the wrong road and found something better",
+    "a baker who used the wrong ingredient and made something new",
+    "a builder who built a house that fell down twice",
+    "a child who broke a rule and learned why it was there",
+    "a fisherman who threw back the biggest catch of his life",
+
+    # Kindness and sacrifice
+    "a stranger who gave their coat to someone cold",
+    "a dog that walked a long way to find its owner",
+    "a mother who stayed up all night for her sick child",
+    "a child who gave their lunch to a hungry classmate",
+    "a brother who did his sister's chores so she could rest",
+    "a farmer who shared his harvest in a year when he had very little",
+
+    # Fear and bravery
+    "a boy who was afraid of water but had to cross a river",
+    "a girl who walked into a dark forest alone",
+    "a child who spoke up when no one else would",
+    "a man who faced a wolf to protect his sheep",
+    "a woman who sailed a boat in a terrible storm",
+    "a person who stood at the edge of a cliff and jumped into the sea",
+
+    # Loss and change
+    "a town that flooded and had to start over",
+    "a family that lost their home in a fire",
+    "a man who came back to his village after many years",
+    "a woman who sold everything to start a new life",
+    "a child who grew up and came back to visit",
+    "an old couple who planted a tree they would never sit under",
+    "a teacher who retired and was forgotten, then remembered",
+
+    # Unexpected outcomes
+    "a race that the slowest runner won",
+    "a storm that uncovered something buried long ago",
+    "a mistake that led to the best day ever",
+    "a broken bridge that saved a village from invaders",
+    "a wrong turn that led to a hidden valley",
+    "a dropped coin that rolled into the right hands",
+
+    # Animals being animals
+    "a hen that sat on a stone thinking it was an egg",
+    "a pig that escaped and went on an adventure",
+    "a cat and a bird that became unlikely friends",
+    "a group of ants that moved a mountain of crumbs",
+    "a donkey that refused to carry one more thing",
+    "an old elephant that remembered where water was hidden",
+
+    # Simple daily stories
+    "a child's first time cooking dinner for the family",
+    "a grandfather who fixed a clock that had been broken for years",
+    "a woman who grew the biggest pumpkin anyone had seen",
+    "a boy who delivered bread in the rain every morning",
+    "a girl who collected stones and gave one to everyone she met",
+    "a family that ate together every night no matter what",
 ]
 
 TOPIC_CATEGORIES = {}
