@@ -19,9 +19,14 @@ from formats.shared import (
 def get_random_params(rng=None):
     rng = rng or random
 
-    letters = list(letter_frequencies.keys())
-    weights = list(letter_frequencies.values())
-    random_letter = rng.choices(letters, weights=weights, k=1)[0]
+    if rng.random() < 0.2:
+        letters = list(letter_frequencies.keys())
+        weights = list(letter_frequencies.values())
+        random_letter = rng.choices(letters, weights=weights, k=1)[0]
+        random_word_type = rng.choice(word_types)
+    else:
+        random_letter = ""
+        random_word_type = ""
 
     format_name = rng.choices(FORMAT_NAMES, weights=FORMAT_WEIGHTS, k=1)[0]
     fmt = get_format(format_name)
@@ -41,7 +46,7 @@ def get_random_params(rng=None):
         "subject": rng.choice(subjects),
         "tone": rng.choice(tones),
         "initial_letter": random_letter,
-        "initial_word_type": rng.choice(word_types),
+        "initial_word_type": random_word_type,
         "grammar": grammar,
         "story_ending": ending,
         "introduce_names": rng.random() < 0.33,
@@ -82,7 +87,12 @@ def iterate_params(seed=42):
         topic = fmt.TOPICS[k % len(fmt.TOPICS)]
         topic_category = fmt.TOPIC_CATEGORIES.get(topic, "")
 
-        random_letter = letter_pool[k % len(letter_pool)]
+        if k % 5 == 0:
+            random_letter = letter_pool[k % len(letter_pool)]
+            random_word_type = word_types[k % len(word_types)]
+        else:
+            random_letter = ""
+            random_word_type = ""
         subject = shuffled_subjects[k % len(shuffled_subjects)]
         grammar = grammars[k % len(grammars)] if k % 2 == 0 else ""
 
@@ -99,7 +109,7 @@ def iterate_params(seed=42):
             "subject": subject,
             "tone": tones[k % len(tones)],
             "initial_letter": random_letter,
-            "initial_word_type": word_types[k % len(word_types)],
+            "initial_word_type": random_word_type,
             "grammar": grammar,
             "story_ending": ending,
             "introduce_names": k % 3 == 0,

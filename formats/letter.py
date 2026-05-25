@@ -208,6 +208,13 @@ def create_prompt(params):
             "\n- Both people should introduce themselves by name at the start of the conversation"
         )
 
+    starter_letter_instruction = ""
+    if params.get("initial_letter"):
+        starter_letter_instruction = (
+            f"\n- Start the conversation with {params['initial_word_type']} "
+            f"that begins with the letter {params['initial_letter']}"
+        )
+
     ending_instruction = ""
     ending = params.get("story_ending", "")
     if ending == "sad":
@@ -237,9 +244,8 @@ def create_prompt(params):
         f"changes, reacts, or asks questions\n"
         f"- Use very basic, simple words only\n"
         f"- Keep sentences short. No big or unusual words\n"
-        f"- If using other names, pick from: {names_str}\n"
-        f"- Start the conversation with {params['initial_word_type']} "
-        f"that begins with the letter {params['initial_letter']}"
+        f"- If using other names, pick from: {names_str}"
+        f"{starter_letter_instruction}"
         f"{grammar_instruction}"
         f"{intro_instruction}"
         f"{ending_instruction}\n\n"
