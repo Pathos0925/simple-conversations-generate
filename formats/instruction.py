@@ -215,6 +215,12 @@ def create_prompt(params):
             f"\n- Where it fits naturally, demonstrate the use of {params['grammar']}."
         )
 
+    intro_instruction = ""
+    if params.get("introduce_names"):
+        intro_instruction = (
+            "\n- Both people should introduce themselves by name at the start of the conversation"
+        )
+
     user_prompt = (
         f"Write a conversation where Person {starter} asks Person {other} to teach them "
         f"{params['topic']}. Person {other} explains it step by step. "
@@ -231,7 +237,8 @@ def create_prompt(params):
         f"- If using names, pick from: {names_str}\n"
         f"- Start the conversation with {params['initial_word_type']} that begins with "
         f"the letter {params['initial_letter']}"
-        f"{grammar_instruction}\n\n"
+        f"{grammar_instruction}"
+        f"{intro_instruction}\n\n"
         f"Format example:\n"
         f"{s_tag} Can you teach me {params['topic']}? {o_tag} Sure! First, you need to...\n\n"
         f"Write the conversation now:"

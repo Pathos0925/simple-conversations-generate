@@ -44,6 +44,7 @@ def get_random_params(rng=None):
         "initial_word_type": rng.choice(word_types),
         "grammar": grammar,
         "story_ending": ending,
+        "introduce_names": rng.random() < 0.33,
         "min_chars": MIN_CHARS,
         "max_chars": MAX_CHARS,
     }
@@ -101,6 +102,7 @@ def iterate_params(seed=42):
             "initial_word_type": word_types[k % len(word_types)],
             "grammar": grammar,
             "story_ending": ending,
+            "introduce_names": k % 3 == 0,
             "min_chars": MIN_CHARS,
             "max_chars": MAX_CHARS,
         }

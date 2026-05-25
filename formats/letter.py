@@ -202,6 +202,12 @@ def create_prompt(params):
             f"\n- Where it fits naturally, demonstrate the use of {params['grammar']}."
         )
 
+    intro_instruction = ""
+    if params.get("introduce_names"):
+        intro_instruction = (
+            "\n- Both people should introduce themselves by name at the start of the conversation"
+        )
+
     ending_instruction = ""
     ending = params.get("story_ending", "")
     if ending == "sad":
@@ -235,6 +241,7 @@ def create_prompt(params):
         f"- Start the conversation with {params['initial_word_type']} "
         f"that begins with the letter {params['initial_letter']}"
         f"{grammar_instruction}"
+        f"{intro_instruction}"
         f"{ending_instruction}\n\n"
         f"Format example:\n"
         f"{s_tag} I want to write a letter to {recipient}. Can you help? "

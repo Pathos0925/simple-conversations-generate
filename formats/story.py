@@ -260,6 +260,12 @@ def create_prompt(params):
             f"\n- Where it fits naturally, demonstrate the use of {params['grammar']}."
         )
 
+    intro_instruction = ""
+    if params.get("introduce_names"):
+        intro_instruction = (
+            "\n- Both people should introduce themselves by name at the start of the conversation"
+        )
+
     persona_instruction = ""
     if params.get("persona"):
         persona_instruction = f"\n- Tell the story from the perspective of {params['persona']}"
@@ -294,6 +300,7 @@ def create_prompt(params):
         f"- Start the conversation with {params['initial_word_type']} that begins with "
         f"the letter {params['initial_letter']}"
         f"{grammar_instruction}"
+        f"{intro_instruction}"
         f"{persona_instruction}"
         f"{ending_instruction}\n\n"
         f"Format example:\n"
