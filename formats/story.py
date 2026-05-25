@@ -1,3 +1,4 @@
+import re
 import random as _random
 from formats.shared import (
     ALLOWED_NAMES, story_endings,
@@ -6,8 +7,11 @@ from formats.shared import (
 
 FORMAT_NAME = "story"
 
+NAMES_PER_CONVERSATION = 4
+
 SYSTEM_PROMPT = (
-    "You write short, simple stories using only very basic words. "
+    "You write simple conversations where one person tells a story to another. "
+    "Mark each person's speech with <person1> and <person2> tags. "
     "Use only very simple, common words that a young child would understand. "
     "Keep sentences short. No fancy words, no complex ideas. "
     "Not every story needs a happy ending. Sometimes things are sad, "
@@ -183,48 +187,60 @@ def get_extra_params(k, rng=None):
         "persona": personas[k % len(personas)] if k % 3 == 0 else "",
         "story_ending": ending,
         "num_paragraphs": 1 + (k % 7),
+        "starter": 1 + (k % 2),
+        "names": rng.sample(ALLOWED_NAMES, NAMES_PER_CONVERSATION),
     }
 
 
 def create_prompt(params):
-    names_str = ", ".join(ALLOWED_NAMES[:16])
+    names_str = ", ".join(params.get("names", ALLOWED_NAMES[:NAMES_PER_CONVERSATION]))
 
     grammar_instruction = ""
     if params.get("grammar"):
         grammar_instruction = (
-            f" The most important thing is to write an engaging easy story, "
-            f"but where it makes sense, demonstrate the use of {params['grammar']}."
+            f"\n- Where it fits naturally, demonstrate the use of {params['grammar']}."
         )
 
     persona_instruction = ""
     if params.get("persona"):
-        persona_instruction = f" Write from the perspective of {params['persona']}."
+        persona_instruction = f"\n- Tell the story from the perspective of {params['persona']}"
 
     ending = params.get("story_ending", "happy")
     ending_instruction = ""
     if ending == "sad":
-        ending_instruction = " The story should end on a sad or difficult note, without forcing a happy resolution."
+        ending_instruction = "\n- The story should end on a sad or difficult note, without forcing a happy resolution"
     elif ending == "neutral":
-        ending_instruction = " The story should end in a matter-of-fact or unresolved way."
+        ending_instruction = "\n- The story should end in a matter-of-fact or unresolved way"
 
-    num_paragraphs = params.get("num_paragraphs", 3)
+    starter = params.get("starter", 1)
+    other = 2 if starter == 1 else 1
+    s_tag = f"<person{starter}>"
+    o_tag = f"<person{other}>"
 
     user_prompt = (
-        f"Write a short story ({num_paragraphs} paragraph{'s' if num_paragraphs > 1 else ''}) "
-        f"using very basic words. The story should be about {params.get('theme', 'Friendship')}, "
+        f"Write a conversation where Person {starter} tells a story to Person {other}. "
+        f"The story should be about {params.get('theme', 'Friendship')}, "
         f"include {params['topic']}, be {params.get('style', 'simple')} in its writing style, "
         f"and ideally feature {params.get('feature', 'dialogue')}. "
         f"The story must involve {params['subject']}. "
-        f"The story should be {params['tone']} in tone and "
-        f"at least {params['min_chars']} characters long."
-        f"{grammar_instruction}{persona_instruction}{ending_instruction}\n\n"
+        f"The conversation should be {params['tone']} in tone and "
+        f"at least {params['min_chars']} characters long.\n\n"
         f"Rules:\n"
+        f"- Use ONLY <person1> and <person2> tags to mark who is speaking\n"
+        f"- Person {starter} is the storyteller. Person {other} listens and sometimes asks questions or reacts\n"
+        f"- Person {other} should speak much less than Person {starter}\n"
         f"- Use only very simple, common words that a young child would understand\n"
         f"- Keep sentences short. No big or unusual words\n"
-        f"- If you need to use names, pick from: {names_str}\n"
-        f"- Start the story with {params['initial_word_type']} that begins with "
-        f"the letter {params['initial_letter']}\n\n"
-        f"Write the story now:"
+        f"- If using names in the story, pick from: {names_str}\n"
+        f"- Start the conversation with {params['initial_word_type']} that begins with "
+        f"the letter {params['initial_letter']}"
+        f"{grammar_instruction}"
+        f"{persona_instruction}"
+        f"{ending_instruction}\n\n"
+        f"Format example:\n"
+        f"{s_tag} Do you want to hear a story? {o_tag} Yes please! "
+        f"{s_tag} Once there was a little cat who lived near a big tree...\n\n"
+        f"Write the conversation now:"
     )
 
     return SYSTEM_PROMPT, user_prompt
@@ -232,23 +248,32 @@ def create_prompt(params):
 
 def validate(text):
     errors = []
+
+    p1_count = text.count("<person1>")
+    p2_count = text.count("<person2>")
+
+    if p1_count == 0:
+        errors.append("missing_person1_tag")
+    if p2_count == 0:
+        errors.append("missing_person2_tag")
+    if p1_count + p2_count < 3:
+        errors.append("too_few_turns")
+
     metrics = base_validate(text)
-
-    if metrics["character_count"] < 100:
-        errors.append("too_short")
-    if "<person1>" in text or "<person2>" in text:
-        errors.append("contains_conversation_tags")
-
     metrics.update({
         "valid": len(errors) == 0,
         "errors": errors,
+        "person1_turns": p1_count,
+        "person2_turns": p2_count,
+        "total_turns": p1_count + p2_count,
     })
     return metrics
 
 
 def normalize(text):
     text = normalize_quotes(text)
-    for marker in ["THE END.", "THE END", "End.", "---"]:
-        if text.rstrip().endswith(marker):
-            text = text.rstrip()[:-len(marker)]
+    text = re.sub(r"</person[12]>", "", text)
+    first_tag = re.search(r"<person[12]>", text)
+    if first_tag:
+        text = text[first_tag.start():]
     return text.strip()

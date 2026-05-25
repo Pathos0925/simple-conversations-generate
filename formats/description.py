@@ -1,13 +1,17 @@
-from formats.shared import normalize_quotes, base_validate
+import re
+import random as _random
+from formats.shared import ALLOWED_NAMES, normalize_quotes, base_validate
 
 FORMAT_NAME = "description"
 
+NAMES_PER_CONVERSATION = 4
+
 SYSTEM_PROMPT = (
-    "You write simple descriptions of things, places, and ideas using only very basic words. "
-    "Describe what something looks like, how it works, or what it does. "
+    "You write simple conversations where one person asks about something and the "
+    "other person describes and explains it. Mark each person's speech with "
+    "<person1> and <person2> tags. "
     "Use only very simple, common words that a young child would understand. "
-    "Keep sentences short. No fancy words, no complex ideas. "
-    "Do not write a story or a conversation. Just describe."
+    "Keep sentences short. No fancy words, no complex ideas."
 )
 
 PERSPECTIVES = [
@@ -149,13 +153,22 @@ for t in TOPICS:
 
 
 def get_extra_params(k, rng=None):
+    rng = rng or _random
     return {
         "perspective": PERSPECTIVES[k % len(PERSPECTIVES)],
+        "starter": 1 + (k % 2),
+        "names": rng.sample(ALLOWED_NAMES, NAMES_PER_CONVERSATION),
     }
 
 
 def create_prompt(params):
     perspective = params.get("perspective", "matter-of-fact")
+    names_str = ", ".join(params.get("names", ALLOWED_NAMES[:NAMES_PER_CONVERSATION]))
+
+    starter = params.get("starter", 1)
+    other = 2 if starter == 1 else 1
+    s_tag = f"<person{starter}>"
+    o_tag = f"<person{other}>"
 
     grammar_instruction = ""
     if params.get("grammar"):
@@ -164,19 +177,25 @@ def create_prompt(params):
         )
 
     user_prompt = (
-        f"Write a simple description about {params['topic']}. "
-        f"The description must mention {params['subject']}. "
-        f"Write it in a {perspective} way. "
-        f"The text should be {params['tone']} in tone and "
+        f"Write a conversation where Person {starter} asks Person {other} about "
+        f"{params['topic']}. Person {other} describes and explains it in a "
+        f"{perspective} way. The conversation must mention {params['subject']}. "
+        f"The conversation should be {params['tone']} in tone and "
         f"at least {params['min_chars']} characters long.\n\n"
         f"Rules:\n"
-        f"- Just describe. Do not write a story or a conversation\n"
+        f"- Use ONLY <person1> and <person2> tags to mark who is speaking\n"
+        f"- Person {other} does most of the talking, describing and explaining\n"
+        f"- Person {starter} asks questions, reacts with surprise or interest, or asks for more details\n"
         f"- Use very basic, simple words only\n"
         f"- Keep sentences short. No big or unusual words\n"
-        f"- Start the description with {params['initial_word_type']} that begins with "
+        f"- If using names, pick from: {names_str}\n"
+        f"- Start the conversation with {params['initial_word_type']} that begins with "
         f"the letter {params['initial_letter']}"
         f"{grammar_instruction}\n\n"
-        f"Write the description now:"
+        f"Format example:\n"
+        f"{s_tag} Can you tell me about {params['topic']}? "
+        f"{o_tag} Sure! Let me tell you...\n\n"
+        f"Write the conversation now:"
     )
 
     return SYSTEM_PROMPT, user_prompt
@@ -184,20 +203,32 @@ def create_prompt(params):
 
 def validate(text):
     errors = []
+
+    p1_count = text.count("<person1>")
+    p2_count = text.count("<person2>")
+
+    if p1_count == 0:
+        errors.append("missing_person1_tag")
+    if p2_count == 0:
+        errors.append("missing_person2_tag")
+    if p1_count + p2_count < 3:
+        errors.append("too_few_turns")
+
     metrics = base_validate(text)
-
-    if metrics["character_count"] < 100:
-        errors.append("too_short")
-    if "<person1>" in text or "<person2>" in text:
-        errors.append("contains_conversation_tags")
-
     metrics.update({
         "valid": len(errors) == 0,
         "errors": errors,
+        "person1_turns": p1_count,
+        "person2_turns": p2_count,
+        "total_turns": p1_count + p2_count,
     })
     return metrics
 
 
 def normalize(text):
     text = normalize_quotes(text)
+    text = re.sub(r"</person[12]>", "", text)
+    first_tag = re.search(r"<person[12]>", text)
+    if first_tag:
+        text = text[first_tag.start():]
     return text.strip()

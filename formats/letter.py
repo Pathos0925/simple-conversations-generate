@@ -4,10 +4,13 @@ from formats.shared import ALLOWED_NAMES, normalize_quotes, base_validate
 
 FORMAT_NAME = "letter"
 
+NAMES_PER_CONVERSATION = 4
+
 SYSTEM_PROMPT = (
-    "You write simple letters between two people using only very basic words. "
-    "Start with 'Dear [Name],' and end with a sign-off like "
-    "'Your friend, [Name]' or 'Love, [Name]'. "
+    "You write simple conversations where one person reads or dictates a letter "
+    "and the other person helps or reacts. Mark each person's speech with "
+    "<person1> and <person2> tags. "
+    "The letter part should start with 'Dear [Name],' and end with a sign-off. "
     "Use only very simple, common words that a young child would understand. "
     "Keep sentences short. No fancy words, no complex ideas."
 )
@@ -125,6 +128,8 @@ def get_extra_params(k, rng=None):
         "sender_name": names[0],
         "recipient_name": names[1],
         "relationship": RELATIONSHIPS[k % len(RELATIONSHIPS)],
+        "starter": 1 + (k % 2),
+        "names": rng.sample(ALLOWED_NAMES, NAMES_PER_CONVERSATION),
     }
 
 
@@ -146,23 +151,38 @@ def create_prompt(params):
     elif ending == "neutral":
         ending_instruction = "\n- The letter should feel ordinary and matter-of-fact"
 
+    starter = params.get("starter", 1)
+    other = 2 if starter == 1 else 1
+    s_tag = f"<person{starter}>"
+    o_tag = f"<person{other}>"
+    names_str = ", ".join(params.get("names", ALLOWED_NAMES[:NAMES_PER_CONVERSATION]))
+
     user_prompt = (
-        f"Write a simple letter from {sender} to {recipient}. "
-        f"They are {relationship}s. "
-        f"The letter is about {params['topic']}. "
+        f"Write a conversation where Person {starter} wants to write a letter to "
+        f"{recipient} (a {relationship}) about {params['topic']}. "
+        f"Person {other} helps them write it or listens as they read it aloud. "
+        f"The letter is from {sender} to {recipient}. "
         f"The letter must mention {params['subject']}. "
-        f"The letter should be {params['tone']} in tone and "
+        f"The conversation should be {params['tone']} in tone and "
         f"at least {params['min_chars']} characters long.\n\n"
         f"Rules:\n"
-        f"- Start with 'Dear {recipient},'\n"
-        f"- End with a sign-off like 'Your {relationship}, {sender}' or 'Love, {sender}'\n"
+        f"- Use ONLY <person1> and <person2> tags to mark who is speaking\n"
+        f"- The letter content should include 'Dear {recipient},' and a sign-off like "
+        f"'Your {relationship}, {sender}' or 'Love, {sender}'\n"
+        f"- Person {starter} reads or dictates the letter. Person {other} suggests "
+        f"changes, reacts, or asks questions\n"
         f"- Use very basic, simple words only\n"
         f"- Keep sentences short. No big or unusual words\n"
-        f"- Start the first sentence after the greeting with {params['initial_word_type']} "
+        f"- If using other names, pick from: {names_str}\n"
+        f"- Start the conversation with {params['initial_word_type']} "
         f"that begins with the letter {params['initial_letter']}"
         f"{grammar_instruction}"
         f"{ending_instruction}\n\n"
-        f"Write the letter now:"
+        f"Format example:\n"
+        f"{s_tag} I want to write a letter to {recipient}. Can you help? "
+        f"{o_tag} Sure! What do you want to say? "
+        f"{s_tag} Dear {recipient}, ...\n\n"
+        f"Write the conversation now:"
     )
 
     return SYSTEM_PROMPT, user_prompt
@@ -170,33 +190,36 @@ def create_prompt(params):
 
 def validate(text):
     errors = []
-    metrics = base_validate(text)
 
-    text_lower = text.lower()
-    if not text_lower.startswith("dear "):
+    p1_count = text.count("<person1>")
+    p2_count = text.count("<person2>")
+
+    if p1_count == 0:
+        errors.append("missing_person1_tag")
+    if p2_count == 0:
+        errors.append("missing_person2_tag")
+    if p1_count + p2_count < 3:
+        errors.append("too_few_turns")
+
+    has_dear = bool(re.search(r"\bdear\b", text, re.IGNORECASE))
+    if not has_dear:
         errors.append("missing_greeting")
 
-    has_signoff = bool(re.search(
-        r"(your friend|love|sincerely|with love|your pal|yours truly|your neighbor|"
-        r"your pen pal|take care|warmly|best wishes|from),?\s*\n?\s*[A-Z]",
-        text, re.IGNORECASE,
-    ))
-    if not has_signoff:
-        errors.append("missing_signoff")
-
-    if metrics["character_count"] < 100:
-        errors.append("too_short")
-
+    metrics = base_validate(text)
     metrics.update({
         "valid": len(errors) == 0,
         "errors": errors,
+        "person1_turns": p1_count,
+        "person2_turns": p2_count,
+        "total_turns": p1_count + p2_count,
     })
     return metrics
 
 
 def normalize(text):
     text = normalize_quotes(text)
-    idx = text.lower().find("dear ")
-    if idx > 0:
-        text = text[idx:]
+    text = re.sub(r"</person[12]>", "", text)
+    first_tag = re.search(r"<person[12]>", text)
+    if first_tag:
+        text = text[first_tag.start():]
     return text.strip()
