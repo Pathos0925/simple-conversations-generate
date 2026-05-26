@@ -1,6 +1,6 @@
 import re
 import random as _random
-from formats.shared import ALLOWED_NAMES, normalize_quotes, base_validate
+from formats.shared import ALLOWED_NAMES, OUTPUT_CONSTRAINT, normalize_quotes, base_validate
 
 FORMAT_NAME = "letter"
 
@@ -248,7 +248,8 @@ def create_prompt(params):
         f"{starter_letter_instruction}"
         f"{grammar_instruction}"
         f"{intro_instruction}"
-        f"{ending_instruction}\n\n"
+        f"{ending_instruction}"
+        f"{OUTPUT_CONSTRAINT}\n\n"
         f"Format example:\n"
         f"{s_tag} I want to write a letter to {recipient}. Can you help? "
         f"{o_tag} Sure! What do you want to say? "

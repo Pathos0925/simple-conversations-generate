@@ -1,6 +1,6 @@
 import random as _random
 from formats.shared import (
-    ALLOWED_NAMES, SIMPLICITY_RULES, story_endings,
+    ALLOWED_NAMES, SIMPLICITY_RULES, story_endings, OUTPUT_CONSTRAINT,
     normalize_quotes, base_validate,
 )
 import re
@@ -302,6 +302,62 @@ TOPIC_CATEGORIES = {
     "explaining what a plural means and how to make one": "language",
     "explaining what a question word is": "language",
     "explaining what an adverb does in a sentence": "language",
+    "why we need to eat different foods": "health",
+    "what happens when you catch a cold": "health",
+    "why exercise is good for you": "health",
+    "how a broken bone heals": "health",
+    "why we feel pain": "health",
+    "what happens when you hold your breath": "health",
+    "why people yawn": "health",
+    "how to stay warm when it is cold outside": "health",
+    "what money is and how it works": "money",
+    "the difference between needs and wants": "money",
+    "how to trade fairly": "money",
+    "what happens when you save money": "money",
+    "how a store decides what to sell": "money",
+    "why some things cost more than others": "money",
+    "figuring out what to do when plans change": "problem solving",
+    "how to deal with a bully": "problem solving",
+    "what to do when two friends disagree": "problem solving",
+    "how to ask for help when you need it": "problem solving",
+    "what to do when you are bored": "problem solving",
+    "how to calm down when you are upset": "problem solving",
+    "what it was like a long time ago": "time",
+    "how things change as you grow up": "time",
+    "why some things take a long time": "time",
+    "what it means to be patient": "time",
+    "how the world looks different in each season": "time",
+    "what happens to old buildings over time": "time",
+    "why we have rules": "community",
+    "what a leader does": "community",
+    "how people work together to build things": "community",
+    "why voting is important": "community",
+    "what a library is for": "community",
+    "how a town gets clean water": "community",
+    "where bread comes from": "food",
+    "how milk gets from a cow to your cup": "food",
+    "why we cook food before eating it": "food",
+    "what grows in different parts of the world": "food",
+    "how to pick ripe fruit": "food",
+    "why some people eat different foods": "food",
+    "how a boat floats on water": "transportation",
+    "what makes a car go": "transportation",
+    "how a train follows the tracks": "transportation",
+    "why airplanes can fly": "transportation",
+    "how people traveled before cars": "transportation",
+    "riding a bicycle for the first time": "transportation",
+    "how to clap a rhythm": "music",
+    "why people sing songs": "music",
+    "how to draw a face": "music",
+    "what colors you can mix together": "music",
+    "making music with things around the house": "music",
+    "why some songs make you feel happy or sad": "music",
+    "what to do if there is a fire": "safety",
+    "how to cross the street safely": "safety",
+    "why you should not talk to strangers alone": "safety",
+    "what to do if you get separated from your family": "safety",
+    "how to be safe around animals you do not know": "safety",
+    "what to do during a big storm": "safety",
 }
 
 story_themes = [
@@ -450,7 +506,8 @@ def create_prompt(params):
             f"{grammar_instruction}"
             f"{intro_instruction}"
             f"{persona_instruction}"
-            f"{ending_instruction}\n\n"
+            f"{ending_instruction}"
+            f"{OUTPUT_CONSTRAINT}\n\n"
             f"Format example:\n"
             f"{s_tag} Want to hear a story? {o_tag} Yes please! {s_tag} Once there "
             f"was a little cat who lived near a big tree...\n\n"
@@ -472,7 +529,8 @@ def create_prompt(params):
             f"{starter_letter_instruction}"
             f"{grammar_instruction}"
             f"{intro_instruction}"
-            f"{ending_instruction}\n\n"
+            f"{ending_instruction}"
+            f"{OUTPUT_CONSTRAINT}\n\n"
             f"Format example:\n"
             f"{s_tag} Hello! Do you want to talk about something? {o_tag} Sure! "
             f"What should we talk about?\n\n"

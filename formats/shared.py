@@ -1,5 +1,3 @@
-import re
-
 LANGUAGE = "en"
 
 letter_frequencies = {
@@ -93,6 +91,8 @@ SIMPLICITY_RULES = (
     "- No big or unusual words\n"
     "- Keep all explanations to one or two short sentences"
 )
+
+OUTPUT_CONSTRAINT = "\n- Return only the conversation. Do not add a title, explanation, or notes"
 
 NAMES_INSTRUCTION = "If you need to use names, pick from: {names}"
 

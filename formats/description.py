@@ -1,6 +1,6 @@
 import re
 import random as _random
-from formats.shared import ALLOWED_NAMES, normalize_quotes, base_validate
+from formats.shared import ALLOWED_NAMES, OUTPUT_CONSTRAINT, normalize_quotes, base_validate
 
 FORMAT_NAME = "description"
 
@@ -266,7 +266,8 @@ def create_prompt(params):
         f"- If using names, pick from: {names_str}"
         f"{starter_letter_instruction}"
         f"{grammar_instruction}"
-        f"{intro_instruction}\n\n"
+        f"{intro_instruction}"
+        f"{OUTPUT_CONSTRAINT}\n\n"
         f"Format example:\n"
         f"{s_tag} Can you tell me about {params['topic']}? "
         f"{o_tag} Sure! Let me tell you...\n\n"

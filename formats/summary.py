@@ -1,7 +1,7 @@
 import re
 import random as _random
 from formats.shared import (
-    ALLOWED_NAMES, story_endings,
+    ALLOWED_NAMES, story_endings, OUTPUT_CONSTRAINT,
     normalize_quotes, base_validate,
 )
 
@@ -12,7 +12,7 @@ SYSTEM_PROMPT = (
     "Use only very basic words that a young child would understand. "
     "Mark each person's speech with <person1> and <person2> tags.\n\n"
 
-    "Person 1 tells a short story. Person 2 gives a summary of the story "
+    "One person tells a short story. The other person gives a summary of the story "
     "in a few short sentences. The summary should capture the main idea "
     "and the most important things that happened.\n\n"
 
@@ -315,7 +315,8 @@ def create_prompt(params):
         f"{starter_letter_instruction}"
         f"{grammar_instruction}"
         f"{intro_instruction}"
-        f"{ending_instruction}\n\n"
+        f"{ending_instruction}"
+        f"{OUTPUT_CONSTRAINT}\n\n"
         f"Write the conversation now:"
     )
 

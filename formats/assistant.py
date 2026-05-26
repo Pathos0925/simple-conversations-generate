@@ -1,7 +1,8 @@
 import re
+import hashlib
 import random as _random
 from formats.shared import (
-    ALLOWED_NAMES, story_endings,
+    ALLOWED_NAMES, story_endings, OUTPUT_CONSTRAINT,
     normalize_quotes, base_validate,
 )
 
@@ -350,8 +351,6 @@ for t in TOPICS:
 
 NAMES_PER_CONVERSATION = 4
 
-SCENARIO_TYPES = ["assistant", "assistant", "assistant", "game", "smart_home"]
-
 
 def _pick_tools(category, k, rng):
     primary = CATEGORY_TOOLS.get(category, CATEGORY_TOOLS["memory"])
@@ -382,7 +381,8 @@ def get_extra_params(k, rng=None):
 def create_prompt(params):
     topic = params["topic"]
     category = TOPIC_CATEGORIES.get(topic, "memory")
-    rng = _random.Random(hash(topic + params.get("subject", "")))
+    seed_str = (topic + params.get("subject", "")).encode()
+    rng = _random.Random(int(hashlib.md5(seed_str).hexdigest()[:8], 16))
     available_tools = _pick_tools(category, 0, rng)
 
     tool_desc_lines = []
@@ -469,7 +469,8 @@ def create_prompt(params):
         f"{grammar_instruction}"
         f"{intro_instruction}"
         f"{refusal_instruction}"
-        f"{ending_instruction}\n\n"
+        f"{ending_instruction}"
+        f"{OUTPUT_CONSTRAINT}\n\n"
         f"Write the conversation now:"
     )
 

@@ -8,11 +8,10 @@ import concurrent.futures
 from tqdm import tqdm
 from datetime import datetime
 
-from formats import FORMAT_MODULES, FORMAT_NAMES, FORMAT_WEIGHTS, get_format
+from formats import FORMAT_NAMES, FORMAT_WEIGHTS, get_format
 from formats.shared import (
     letter_frequencies, word_types, grammars, tones, subjects,
     story_endings, MIN_CHARS, MAX_CHARS, MAX_TOKENS,
-    base_validate,
 )
 
 
@@ -72,10 +71,14 @@ def iterate_params(seed=42):
     shuffled_subjects = list(subjects)
     rng.shuffle(shuffled_subjects)
 
+    shuffled_tones = list(tones)
+    rng.shuffle(shuffled_tones)
+
+    shuffled_grammars = list(grammars)
+    rng.shuffle(shuffled_grammars)
+
     format_order = list(FORMAT_NAMES)
     rng.shuffle(format_order)
-
-    assert len(grammars) % 2 != 0, "Number of grammars should be odd"
 
     k = 0
     while True:
@@ -94,20 +97,24 @@ def iterate_params(seed=42):
             random_letter = ""
             random_word_type = ""
         subject = shuffled_subjects[k % len(shuffled_subjects)]
-        grammar = grammars[k % len(grammars)] if k % 2 == 0 else ""
+        grammar = shuffled_grammars[k % len(shuffled_grammars)] if k % 2 == 0 else ""
 
-        ending = rng.choices(
-            [e[0] for e in story_endings],
-            weights=[e[1] for e in story_endings],
-            k=1,
-        )[0]
+        formats_with_endings = {"story", "conversation", "summary", "letter", "diary", "assistant"}
+        if format_name in formats_with_endings:
+            ending = rng.choices(
+                [e[0] for e in story_endings],
+                weights=[e[1] for e in story_endings],
+                k=1,
+            )[0]
+        else:
+            ending = ""
 
         params = {
             "format": format_name,
             "topic": topic,
             "topic_category": topic_category,
             "subject": subject,
-            "tone": tones[k % len(tones)],
+            "tone": shuffled_tones[k % len(shuffled_tones)],
             "initial_letter": random_letter,
             "initial_word_type": random_word_type,
             "grammar": grammar,

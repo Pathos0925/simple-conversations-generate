@@ -1,6 +1,6 @@
 import re
 import random as _random
-from formats.shared import ALLOWED_NAMES, normalize_quotes, base_validate
+from formats.shared import ALLOWED_NAMES, OUTPUT_CONSTRAINT, normalize_quotes, base_validate
 
 FORMAT_NAME = "instruction"
 
@@ -165,7 +165,6 @@ TOPICS = [
     "how to fix a hole in a sock",
 ]
 
-TOPIC_CATEGORIES = {t: t.split("how to ")[1].split()[0] if "how to " in t else "general" for t in TOPICS}
 _CATEGORY_MAP = {
     "make": "cooking/crafts", "boil": "cooking", "bake": "cooking", "cook": "cooking",
     "fry": "cooking", "wash": "cleaning", "peel": "cooking", "pack": "practical",
@@ -244,7 +243,8 @@ def create_prompt(params):
         f"- If using names, pick from: {names_str}"
         f"{starter_letter_instruction}"
         f"{grammar_instruction}"
-        f"{intro_instruction}\n\n"
+        f"{intro_instruction}"
+        f"{OUTPUT_CONSTRAINT}\n\n"
         f"Format example:\n"
         f"{s_tag} Can you teach me {params['topic']}? {o_tag} Sure! First, you need to...\n\n"
         f"Write the conversation now:"

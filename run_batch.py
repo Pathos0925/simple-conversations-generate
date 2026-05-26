@@ -1,7 +1,6 @@
 import argparse
 import json
 import os
-import re
 import time
 from datetime import datetime
 from dotenv import load_dotenv
@@ -376,8 +375,8 @@ def filter_dataset(output_file, tokenizer_path=None):
         print(f"Counting tokens with tokenizer: {tokenizer_path}")
         sp = load_tokenizer(tokenizer_path)
         df["token_count"] = df["text"].apply(lambda x: len(sp.encode(x)))
-        df = df[df["token_count"] >= 512]
-        print(f"After token count filter (>=512): {len(df)}")
+        df = df[df["token_count"] >= 200]
+        print(f"After token count filter (>=200): {len(df)}")
     else:
         df = df[df["character_count"] >= 1024]
         print(f"After character count filter (>=1024): {len(df)}")
@@ -385,6 +384,11 @@ def filter_dataset(output_file, tokenizer_path=None):
     df["initial_word_type"] = df["initial_word_type"].apply(
         lambda x: x.split()[-1] if x else x
     )
+
+    before_dedup = len(df)
+    df = df.drop_duplicates(subset=["text"], keep="first")
+    if before_dedup > len(df):
+        print(f"After deduplication: {len(df)} (dropped {before_dedup - len(df)} duplicates)")
 
     df = df.drop(columns=["valid", "errors", "generation_id"], errors="ignore")
     df = df.sample(frac=1, random_state=42).reset_index(drop=True)
@@ -488,6 +492,8 @@ def main():
                 n = min(args.batch_size, args.num - total)
                 requests, params_lookup = get_batch_requests(n, args.model, offset=args.offset + total)
                 all_params.update(params_lookup)
+                with open(os.path.join(directory, "params_lookup.json"), "w", encoding="utf-8") as f:
+                    json.dump(all_params, f, ensure_ascii=False)
                 if use_kimi:
                     kimi_submit_and_poll(client, requests, directory, batch_number)
                 else:
@@ -497,9 +503,6 @@ def main():
             except Exception as e:
                 print(f"Error: {e}")
                 failures += 1
-
-        with open(os.path.join(directory, "params_lookup.json"), "w", encoding="utf-8") as f:
-            json.dump(all_params, f, ensure_ascii=False)
 
         if failures >= args.max_retries:
             print(f"Stopping due to {args.max_retries} consecutive failures.")

@@ -1,7 +1,7 @@
 import re
 import random as _random
 from formats.shared import (
-    ALLOWED_NAMES, story_endings,
+    ALLOWED_NAMES, story_endings, OUTPUT_CONSTRAINT,
     normalize_quotes, base_validate,
 )
 
@@ -308,7 +308,8 @@ def create_prompt(params):
         f"{grammar_instruction}"
         f"{intro_instruction}"
         f"{persona_instruction}"
-        f"{ending_instruction}\n\n"
+        f"{ending_instruction}"
+        f"{OUTPUT_CONSTRAINT}\n\n"
         f"Format example:\n"
         f"{s_tag} Do you want to hear a story? {o_tag} Yes please! "
         f"{s_tag} Once there was a little cat who lived near a big tree...\n\n"
