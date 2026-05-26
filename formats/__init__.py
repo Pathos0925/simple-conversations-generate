@@ -1,4 +1,8 @@
-from formats import story, conversation, instruction, description, letter, diary, assistant, summary
+from formats import (
+    story, conversation, instruction, description, letter, diary,
+    assistant, summary, qa, reading_comprehension, classification,
+    comparison, planning, correction, extraction,
+)
 
 FORMAT_MODULES = {
     "story": story,
@@ -9,6 +13,13 @@ FORMAT_MODULES = {
     "diary": diary,
     "assistant": assistant,
     "summary": summary,
+    "qa": qa,
+    "reading_comprehension": reading_comprehension,
+    "classification": classification,
+    "comparison": comparison,
+    "planning": planning,
+    "correction": correction,
+    "extraction": extraction,
 }
 
 FORMAT_NAMES = list(FORMAT_MODULES.keys())
